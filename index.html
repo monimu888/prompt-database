@@ -725,7 +725,7 @@ main {
 const SUPABASE_URL = 'https://wjwekjcqnacwkvgaculw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indqd2VramNxbmFjd2t2Z2FjdWx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MTY2OTIsImV4cCI6MjA4MjA5MjY5Mn0.ACE_pNNJVsy6_C8Wm3BzguAt9kvHliU2ptWH6son7_Q';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let prompts = [];
 let filteredPrompts = [];
@@ -753,7 +753,7 @@ function updateSyncStatus(online) {
 // プロンプト読み込み
 async function loadPrompts() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('prompts')
             .select('*')
             .order('created_at', { ascending: false });
@@ -962,10 +962,10 @@ async function savePrompt() {
         let error;
         if (id) {
             // 更新
-            ({ error } = await supabase.from('prompts').update(data).eq('id', id));
+            ({ error } = await supabaseClient.from('prompts').update(data).eq('id', id));
         } else {
             // 新規作成
-            ({ error } = await supabase.from('prompts').insert([data]));
+            ({ error } = await supabaseClient.from('prompts').insert([data]));
         }
 
         if (error) throw error;
@@ -996,7 +996,7 @@ async function deleteCurrentPrompt() {
     const p = filteredPrompts[currentIndex];
 
     try {
-        const { error } = await supabase.from('prompts').delete().eq('id', p.id);
+        const { error } = await supabaseClient.from('prompts').delete().eq('id', p.id);
         if (error) throw error;
 
         await loadPrompts();
@@ -1040,7 +1040,7 @@ async function handleImport(input) {
 
         if (doReplace) {
             // 既存データを削除
-            await supabase.from('prompts').delete().neq('id', 0);
+            await supabaseClient.from('prompts').delete().neq('id', 0);
         }
 
         // インポートデータを整形
@@ -1051,7 +1051,7 @@ async function handleImport(input) {
             video: p.video || null
         }));
 
-        const { error } = await supabase.from('prompts').insert(toInsert);
+        const { error } = await supabaseClient.from('prompts').insert(toInsert);
         if (error) throw error;
 
         await loadPrompts();
